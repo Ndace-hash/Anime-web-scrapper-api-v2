@@ -35,3 +35,26 @@ app.get("/genres", async (request, response) => {
 
   response.send(genreList);
 });
+
+/**@example http://localhost:3000/gl?link=/genre/ecchi
+ * ANIME LIST BY GENRE
+ */
+app.get("/gl", async (request, response) => {
+  console.log(request.query.link);
+  const { data } = await axios.get(
+    `https://www3.gogoanimes.fi${request.query.link}`
+  );
+  const $ = await cheerio.load(data);
+  const animeList = [];
+
+  $(".main_body .last_episodes ul.items li").each((i, el) => {
+    const title = $(el).find("p.name a").text();
+    const image = $(el).find(".img a img").attr("src");
+    const link = $(el).find("p.name a").attr("href");
+    const released = $(el).find("p.released").text().trim();
+
+    animeList.push({ title, image, link, released });
+  });
+
+  response.send(animeList);
+});
