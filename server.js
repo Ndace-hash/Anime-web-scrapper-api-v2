@@ -6,14 +6,10 @@ const express = require("express");
 const axios = require("axios");
 const cheerio = require("cheerio");
 const cors = require("cors");
-// const puppeteer = require("puppeteer-extra");
-// const StealthPlugin = require("puppeteer-extra-plugin-stealth");
-// const RandomUserAgent = require("random-useragent");
 
 const app = express();
 app.use(cors());
 const PORT = process.env.PORT || 3000;
-// puppeteer.use(StealthPlugin());
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
@@ -63,6 +59,35 @@ app.get("/gl", async (request, response) => {
   response.set("Acess-Control-Allow-Origin", "*");
 
   response.send(animeList);
+});
+
+/**@example http://localhost:3000/search?keyword=kekkon%20yubiwa%20monogatari
+ * search for anime by keywords
+ */
+app.get("/search", async (request, response) => {
+  console.log(request.method, `/search?keyword=${request.query.keyword}`);
+  const { data } = await axios.get(
+    `https://www3.gogoanimes.fi/search.html?keyword=${request.query.keyword}`
+  );
+  const $ = cheerio.load(data);
+  const searchList = [];
+
+  $("ul.items li").each((_i, el) => {
+    const $name = $(el).find("p.name a").text();
+    const $image = $(el).find(".img img").attr("src");
+    const $link = $(el).find("p.name a").attr("href");
+    const $released = $(el).find("p.released").text().split(":")[1].trim();
+
+    searchList.push({
+      name: $name,
+      image: $image,
+      link: $link,
+      released: $released,
+    });
+  });
+
+  response.set("Access-Control-Allow-Origin", "*");
+  response.send(searchList);
 });
 
 /**@example http://localhost:3000/kekkon-yubiwa-monogatari */
@@ -140,50 +165,3 @@ app.get("/:anime/episode", async (request, response) => {
     download_link,
   });
 });
-
-app;
-// const USER_AGENT =
-//   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.75 Safari/537.36";
-
-// function DownloadLink(link) {
-//   return new Promise((resolve, reject) => {
-//     (async () => {
-//       const userAgent = RandomUserAgent.getRandom();
-
-//       const UA = userAgent || USER_AGENT;
-//       // Launch a headless browser instance
-//       const browser = await puppeteer.launch({ headless: false });
-
-//       const page = await browser.newPage();
-
-//       await page.setUserAgent(UA);
-//       await page.setJavaScriptEnabled(true);
-//       await page.setDefaultNavigationTimeout(60000);
-//       // Navigate to the website
-//       await page.goto(link);
-
-//       // Wait for the dynamic content to load
-//       await page.waitForXPath('//*[@id="content-download"]/div[1]'); // Replace with the appropriate XPath of the dynamic content element
-
-//       // Get the page content
-//       const pageContent = await page.content();
-
-//       // Extract the download links
-//       const downloadLinks = [];
-//       // Use DOM manipulation methods to extract the download links based on the HTML structure of the website
-//       // Example:
-//       const linkElements = await page.$$(".dowload > a"); // Replace with the appropriate selector for the download links
-//       console.log(linkElements);
-//       // for (const linkElement of linkElements) {
-//       //    const link = await linkElement.getProperty('href');
-//       //    downloadLinks.push(await link.jsonValue());
-//       //  }
-
-//       // Close the browser instance
-//       await browser.close();
-
-//       // Use the extracted download links as needed
-//       console.log("download", downloadLinks); // Print or process the download links as needed
-//     })();
-//   });
-// }
