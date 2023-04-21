@@ -144,14 +144,14 @@ app.get("/:title", async (request, response) => {
 /**@example https://localhost:3000/bleach/episode?number=17
  * Gets an episode of an anime
  */
-app.get("/:anime/episode", async (request, response) => {
+app.get("/:title/episode", async (request, response) => {
   console.log(
-    `/${request.params.anime}/episode?number=${request.query.number}`
+    `/${request.params.title}/episode?number=${request.query.number}`
   );
   const { data } = await axios.get(
-    `https://gogoanimes.fi/${request.params.anime}-episode-${request.query.number}`
+    `https://gogoanimes.fi/${request.params.title}-episode-${request.query.number}`
   );
-  const name = request.params.anime;
+  const name = request.params.title;
   const episode = request.query.number;
 
   const $ = await cheerio.load(data);
