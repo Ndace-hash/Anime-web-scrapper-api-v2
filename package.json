@@ -6,7 +6,8 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "build": "node server"
+    "build": "node server",
+    "start": "node server.js"
   },
   "devDependencies": {},
   "dependencies": {
